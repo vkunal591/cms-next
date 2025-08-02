@@ -17,6 +17,7 @@ interface AuthContextProps {
   refreshToken: string | null;
   login: (accessToken: string, refreshToken: string, userData: object) => void;
   logout: () => void;
+  hasPermission: (tabRoute: any, action: any) => any
 }
 
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
@@ -27,7 +28,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const navigate = useRouter();
   const pathName = usePathname();
   const [loading, setLoading] = useState<boolean>(true);
-  const [user, setUser] = useState<object | null>(null);
+  const [user, setUser] = useState<any | null>(null);
+  const [tsbs, setTsbs] = useState(null)
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
@@ -44,6 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
         if (response?.success && response?.data) {
           setUser(response.data);
+          setTsbs(response?.data)
           setAccessToken(storedAccessToken);
           setRefreshToken(storedRefreshToken);
           setLoading(false);
@@ -63,6 +66,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
     const storedAccessToken = localStorage.getItem("accessToken");
     const storedRefreshToken = localStorage.getItem("refreshToken");
+    console.log("dddd")
     if (storedAccessToken && storedRefreshToken) {
       fetchUser(storedAccessToken, storedRefreshToken);
     } else {
@@ -88,8 +92,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     return navigate.replace("/auth/login");
   };
 
+  const hasPermission = (tabRoute: any, action: any) => {
+    return user?.role?.access.some((a: any) =>
+      a.tab.route === tabRoute &&
+      a.permissions[0].includes(action)
+    );
+  }
+
+
   return (
-    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout }}>
+    <AuthContext.Provider value={{ user, accessToken, refreshToken, login, logout, hasPermission }}>
       {loading ? <Loader /> : children}
     </AuthContext.Provider>
   );

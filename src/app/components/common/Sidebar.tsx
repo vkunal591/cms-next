@@ -1,5 +1,6 @@
 'use client';
 
+import { useAuth } from '@/context/AuthContext';
 import Image from 'next/image';
 import { useState } from 'react';
 import { FaUsers, FaChevronDown, FaChevronUp } from 'react-icons/fa';
@@ -23,9 +24,9 @@ const tabs = [
 ];
 
 export const Sidebar = () => {
+    const { hasPermission } = useAuth()
     const [collapsed, setCollapsed] = useState(true);
     const [openTab, setOpenTab] = useState<string | null>(null);
-
     const toggleCollapse = () => setCollapsed((prev) => !prev);
     const handleTabClick = (id: string) =>
         setOpenTab((prev) => (prev === id ? null : id));
